@@ -60,8 +60,16 @@ yGrid = linspace(yLim(1), yLim(end), 1e2+1);
 pdfSample = mvnpdf([X(:), Y(:)], meanS', covS);
 pdfSample = reshape(pdfSample, size(X));
 % imagesc(hAxe(1), xGrid, yGrid, pdfSample')
-contour(X,Y, pdfSample)
-caxis([-5e-2, max(pdfSample(:))])
+% contour(X,Y, pdfSample)
+contourf(X,Y, pdfSample, 'linestyle', 'none')
+
+% Use the colormap of the same color series
+addpath(fullfile(Path_RootDir, 'plotCode'));
+% cMap = getColorMapPosNegDat([0, max(pdfSample(:))], 64);
+% colormap(cMap);
+cMap = flipud(gray(64));
+colormap(cMap)
+caxis([-1e-2, max(pdfSample(:))])
 axis xy
 
 % Plot the distribution of posterior predicted by Bayes theorem
