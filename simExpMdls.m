@@ -8,7 +8,7 @@ setWorkPath;
 addpath(fullfile(Path_RootDir, 'simExp'));
 
 %%
-flagTask = 4;
+flagTask = 1;
 % 1. Demo of the Langevin sampling (OU process) of 1d stimulus feature
 % 2. Demo of the Langevin sampling of 2d stimulus features
 % 3. Demo of the Langevin sampling in a single CANN
