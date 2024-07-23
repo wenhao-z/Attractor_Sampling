@@ -9,7 +9,8 @@ nDim = 2;
 tauL = 1; % time constant of Langevin sampling
 dt = 0.01; % time step for simulation
 
-x = [-1; 1];
+% x = [-1; 1];
+x = [0;0];
 
 % Prior precision matrix
 Lambda_Stim = 1;
@@ -29,7 +30,7 @@ nSteps = 5e5;
 sMat = diag(ones(1,nDim)) - Omega * dt/ (2*tauL);
 xMat = Lambda*dt / (2*tauL);
 
-sArray = zeros(nDim, nSteps);
+sArray = zeros(nDim,o nSteps);
 for t = 1: nSteps
     sArray(:,t+1) = sMat * sArray(:,t) + xMat*x + sqrt(dt/tauL) * randn(nDim,1);
 end

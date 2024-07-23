@@ -12,20 +12,22 @@ parsSingleCANN;
 flagTest = 2;
 % 1: Change the input intensity while fix the recurrent weight
 % 2: Change the recurrent weight while fix the input intensity
-switch flagTest
-    case 1
-        NetPars.AmplRatio = 0:0.1:2;
-        NetPars.JrcRatio = 0.5;
-    case 2
-        NetPars.AmplRatio = [0.4, 0.8, 1.2];
-        NetPars.JrcRatio = 0:0.1:0.9;
-end
+% switch flagTest
+%     case 1
+%         NetPars.AmplRatio = 0:0.1:2;
+%         NetPars.JrcRatio = 0.5;
+%     case 2
+%         NetPars.AmplRatio = [0.4, 0.8, 1.2];
+%         NetPars.JrcRatio = 0:0.1:0.9;
+% end
+
+NetPars.k = (0.1:0.2:1.5) * 5e-4;
 NetPars.fanoFactor = 0.5;
 NetPars.tTrial = 5e3 * NetPars.tau;
 
 % Generate grid of parameters
 [parGrid, dimPar] = paramGrid(NetPars);
-parGrid = arrayfun(@(x) getDependentPars(x), parGrid);
+% parGrid = arrayfun(@(x) getDependentPars(x), parGrid);
 
 %% Net Simulation
 NetStat = struct('BumpPos', [], ...

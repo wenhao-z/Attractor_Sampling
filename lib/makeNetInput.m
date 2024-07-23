@@ -71,10 +71,10 @@ if isfield(outArgs, 'Iext')
     % Apply cueing condition
     switch NetPars.cueCond
         case 1 % Cue 1
-            Iext(:, 2:2:end, :) = 0;
+            Iext(:, 2, :) = 0;
             % Iext(:, 2:2:end, :) = zeros(size(Iext)./[1,2,1]);
         case 2 % Cue 2
-            Iext(:, 1:2:end, :) = 0;
+            Iext(:, 1, :) = 0;
     end
     
     % Fold variables into output struct

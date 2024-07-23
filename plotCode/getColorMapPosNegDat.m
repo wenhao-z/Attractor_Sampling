@@ -13,7 +13,10 @@ cSpec = lines(2);
 
 cSpec = flip(cSpec, 1);
 % cSpec = [1,0,0; ...
-%     0,0,1];
+%     0,0,1];cSpec = lines(2);
+cSpec = cSpec(2,:);
+cMap = linspace(cSpec, 1, 64);
+cMap = ones(1,3);
 
 [~, cIdxZero] = min(abs(colortick));
 

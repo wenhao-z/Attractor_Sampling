@@ -118,7 +118,7 @@ axis xy
 
 % Plot the distribution of posterior predicted by Bayes theorem
 SigmaS = inv(OmegaTheory);
-fPostBayes = @(x,y) ( ([x;y] - meanSampleTheory)' * OmegaTheory * ([x;y]-muS) - 9);
+fPostBayes = @(x,y) ( ([x;y] - meanSampleTheory)' * OmegaTheory * ([x;y]-meanSampleTheory) - 9);
 hEllipse = fimplicit(hAxe(1), fPostBayes, ...
     [SigmaS(1) + 5*SigmaS(1)*[-1, 1], meanSampleTheory(2) + 5*SigmaS(4)*[-1, 1]], ...
     'color', 'k', 'linestyle', '--', 'linew', 2);

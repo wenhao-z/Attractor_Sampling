@@ -44,7 +44,7 @@ parfor iterMCSim = 1: nMCSim * length(numNetsArray)
     % Randomly generate a connection matrix
     rng(sum(clock)*100); % I need to randomly set the random seed. The simNet code will set the net random seed.
     JMat = rand(netpars.numNets)* netpars.Jc;
-    % JMat = JMat/ netpars.numNets; % Scale with the number of networks
+    JMat = JMat/ netpars.numNets; % Scale with the number of networks
     % JMat = (JMat + JMat')/2;
     JMatArray{iterMCSim} = JMat;
     netpars.JMat = JMat;

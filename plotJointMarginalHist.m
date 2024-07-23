@@ -35,19 +35,20 @@ plot(hAxe(1), X(1), Y(1), 'sg'); % Initial point
 fh = @(x,y) ( ([x;y] - meanSample)' / covSample/9 * ([x;y]-meanSample) - 1);
 % hEllipse = ezplot(hAxe(1), fh, [meanSample(1) + 3*covSample(1)*[-1, 1], meanSample(2) + 3*covSample(4)*[-1, 1]]);
 hEllipse = fimplicit(hAxe(1), fh, [meanSample(1) + 5*covSample(1)*[-1, 1], meanSample(2) + 5*covSample(4)*[-1, 1]], ...
-    'linew', 2);
+    'linew', 2); %#ok<NASGU>
 title(hAxe(1), [])
 
 
 % Marginal distribution
+nBins = 2e2;
 for iter = 1: 2
     switch iter
         case 1
             dataPoints = X;
-            histEdge = linspace(axisLim(1), axisLim(2), 2e2);
+            histEdge = linspace(axisLim(1), axisLim(2), nBins);
         case 2
             dataPoints = Y;
-            histEdge = linspace(axisLim(3), axisLim(4), 2e2);
+            histEdge = linspace(axisLim(3), axisLim(4), nBins);
     end
     
     histVal = histcounts(dataPoints, histEdge);

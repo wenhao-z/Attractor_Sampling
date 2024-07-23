@@ -45,6 +45,7 @@ if ~isfield(NetPars, 'JMat')
 else
     JMat = NetPars.JMat;
 end
+JMat = JMat'; % Note: the transpose is because Jmat is right multiply with Isyn on line 87
 
 %% Initiation
 % [N, numNets, Time, nTrials]

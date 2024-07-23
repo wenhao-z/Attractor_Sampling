@@ -9,10 +9,10 @@ setWorkPath;
 % Load parameters
 parsSingleCANN;
 
-NetPars.AmplRatio = 0.5;
+NetPars.AmplRatio = 0.02;
 NetPars.JrcRatio = 0.5;
 NetPars.fanoFactor = 0.5;
-NetPars.tLen = 1e3 * NetPars.tau;
+NetPars.tLen = 5e4 * NetPars.tau;
 NetPars.seedNois = sum(clock);
 
 % Generate grid of parameters
@@ -65,72 +65,75 @@ varBumpPosTheory = 4*NetPars.fanoFactor*NetPars.TunWidth/sqrt(pi)/ 3^(3/2) ./ [p
 % ------------------------------------------------------------
 % Auto correlation function.
 
-[CCFunc, tLag] = xcorr(NetStat.BumpPos(1,NetPars.tStat/NetPars.dt+1:end), 5e3);
+[CCFunc, tLag] = xcorr(NetStat.BumpPos(1,NetPars.tStat/NetPars.dt+1:end), 1e3);
 CCFunc = CCFunc((end+1)/2:end)./max(CCFunc);
 tLag = tLag((end+1)/2:end) * NetPars.dt;
 % CCFunc_Theory = exp(-abs(tLag)*parGrid.Ampl/NetPars.tau/NetStat.UHeightAvg);
 CCFunc_Theory = exp(-abs(tLag)* parGrid.Ampl * NetPars.rho /NetPars.tau/NetStat.UHeightAvg/sqrt(2)*2.5);
 
-%%
-figure 
-hAxe(1) = subplot(3,4,1:3);
-tPlot = 5e3;
-plot((1:tPlot)*NetPars.dt, NetStat.BumpPos(NetPars.tStat/NetPars.dt+(1:tPlot)) );
-xlabel('Time (\tau)')
-ylabel('Sample s')
+%% Analyze the step size with population firing rate
 
-hAxe(2) = subplot(3,4,4);
-[ProbSample, edgeSample] = histcounts(NetStat.BumpPos(NetPars.tStat/NetPars.dt+1:end), 1e2);
-stairs(ProbSample/sum(ProbSample), (edgeSample(1:end-1)+edgeSample(2:end))/2)
-hold on
-plot(normpdf((edgeSample(1:end-1)+edgeSample(2:end))/2, NetPars.Posi, 1/sqrt(PreMat_LH))*mean(diff(edgeSample)), ...
-    (edgeSample(1:end-1)+edgeSample(2:end))/2)
-% plot(normpdf(edgeSample, NetPars.Posi, sqrt(NetStat.varBumpPos))*mean(diff(edgeSample)), edgeSample)
-xlabel('Prob. of samples')
+nBin = 0.5*NetPars.tau/NetPars.dt; % Decoding time window
+nBootStrap = 100;
 
-linkaxes(hAxe, 'y')
-ylim(5*[-1, 1])
+Rate = squeeze(InputSet.O(:,1, 50*NetPars.tau/NetPars.dt+1 : end));
+% Rate = squeeze(InputSet.O(:,1, NetPars.tStat/NetPars.dt+1 : end));
+% Rate = squeeze(InputSet.O);
+Rate = mat2cell(Rate, size(Rate,1), nBin*ones(1, size(Rate,2) / nBin));
+Rate = cellfun(@(x) mean(x,2), Rate, 'uniformoutput', false);
+Rate = cell2mat(Rate);
 
-subplot(3,1,2:3)
-plot(tLag, CCFunc)
-hold on
-plot(tLag, CCFunc_Theory)
-axis square
-ylim([-0.01, 1])
-legend('Sim', 'Theory')
-xlabel('Time (\tau)')
-ylabel('Cross correlation')
-set(gca, 'ytick', 0:0.25:1)
-title(['AmplRatio=', num2str(NetPars.AmplRatio), ', JrcRatio=', num2str(NetPars.JrcRatio)])
+BumpPos = statBumpPos(Rate, NetPars);
+diffPos = diff(BumpPos);
+
+PopRate = sum(Rate(end/2-45:end/2+45,:), 1);
+% PopRate = sum(Rate, 1);
+
+[N, edges, bin] = histcounts(PopRate(1:end-1), 100);
+
+varStepSize = zeros(1, length(N));
+std_varStepSize = zeros(1, length(N));
+for iter = 1 : length(N)
+    diffPosTmp = diffPos(bin == iter);
+    varStepSize(iter) = var(diffPosTmp);
+
+    % Bootstrap to get the std. of statistics
+    if length(diffPosTmp) <= 1
+        continue
+    end
+    varStepSize_bootstat = bootstrp(nBootStrap, @(x) var(x), diffPosTmp);
+    std_varStepSize(iter) = std(varStepSize_bootstat);
+end
+clear diffPosTmp
+
+% Fit
+fitMdl = fittype(@(a,b,x) a./x + b);
+
+IdxStart = find(N>50, 1, 'first');
+IdxEnd = find(N>50, 1, 'last');
+fitObj = fit(edges(IdxStart:IdxEnd)', varStepSize(IdxStart:IdxEnd)', fitMdl);
 
 %%
 figure
+hAxe(1) = subplot(3,1,1);
+plot(PopRate(1:end-1), (diffPos), '.')
+ylabel('Step size')
+title(['AmplRatio:' num2str(NetPars.AmplRatio), ' JrcRatio:' num2str(NetPars.JrcRatio)]);
 
-subplot(2,2,1:2)
-imagesc((0:tPlot)*NetPars.dt, NetPars.PrefStim, squeeze(InputSet.O(:,1,NetPars.tStat/NetPars.dt+ (0:tPlot))) );
-axis xy
-xlabel('Time (\tau)')
-ylabel('Neuron index \theta')
-set(gca, 'ytick', [-178, 0, 180], 'yticklabel', [-180, 0, 180])
-
-subplot(2,2,3)
+hAxe(2) = subplot(3,1,2);
 hold on
-plot(NetPars.PrefStim, NetStat.OAvgXTime)
-plot(NetPars.PrefStim, NetStat.OAvgXTime - NetStat.OStdXTime)
-plot(NetPars.PrefStim, NetStat.OAvgXTime + NetStat.OStdXTime)
-set(gca, 'xtick', NetPars.Width * (-1:0.5:1))
-xlim(NetPars.Width * [-1, 1])
-ylim([0, 50])
-ylabel('Firing rate(Hz)')
-xlabel('Neuron index \theta')
-axis square 
-title(['AmplRatio=', num2str(NetPars.AmplRatio), ', JrcRatio=', num2str(NetPars.JrcRatio)])
+plot(edges(1:end-1), varStepSize, '-.')
+plot(edges(1:end-1), varStepSize - std_varStepSize)
+plot(edges(1:end-1), varStepSize + std_varStepSize)
+plot(fitObj, edges(1:end-1), varStepSize);
+xlabel('Population Firing Rate')
+ylabel('Var. of step size')
 
-subplot(2,2,4)
-plot(NetPars.PrefStim, NetStat.OStdXTime.^2 ./ NetStat.OAvgXTime);
-set(gca, 'xtick', NetPars.Width * (-1:0.5:1))
-xlim(NetPars.Width * [-1, 1])
-ylabel('Fano factor')
-xlabel('Neuron index \theta')
-box off
-axis square
+hAxe(3) = subplot(3,1,3);
+plot(edges(1:end-1), N)
+hold on
+plot(edges([1, end-1]), 50*ones(1,2), '--k')
+
+linkaxes(hAxe, 'x')
+xlim(edges([IdxStart, IdxEnd]))
+

@@ -31,6 +31,8 @@ NetPars.stdIntNois = repmat(NetPars.stdIntNois, [NetPars.numNets, 1]);
 NetPars.bAddNoise = 1;
 NetPars.AmplBkg = 0;
 
+% Internal variability
+NetPars.fanoFactor = 0.5;
 
 % Parameters of multiple trials
 NetPars.tTrial  = 500 * NetPars.tau;
