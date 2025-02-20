@@ -9,7 +9,7 @@ setWorkPath;
 % Load parameters
 parsSingleCANN;
 
-flagTest = 2;
+flagTest = 3;
 % 1: Change the input intensity while fix the recurrent weight
 % 2: Change the recurrent weight while fix the input intensity
 switch flagTest
@@ -18,7 +18,9 @@ switch flagTest
         NetPars.JrcRatio = 0.5;
     case 2
         NetPars.AmplRatio = [0.4, 0.8, 1.2];
-        NetPars.JrcRatio = 0:0.1:0.9;
+        NetPars.JrcRatio = 0:0.1:1;
+    case 3
+        NetPars.Posi = -180:20:180;
 end
 NetPars.fanoFactor = 0.5;
 NetPars.tTrial = 5e3 * NetPars.tau;
@@ -140,9 +142,9 @@ switch flagTest
         % legend('1./Bump posi. var.', 'Fisher info.', 'Rate average','location', 'best')
     case 2
         subplot(1,3,1)
-        plot(NetPars.JrcRatio, 1./reshape([NetStat.varBumpPos], size(parGrid)), 'o', 'color', cMap(1,:))
+        plot(NetPars.JrcRatio, 1./reshape([NetStat.varBumpPos], size(parGrid)), '-o', 'color', cMap(1,:))
         hold on
-        %plot(NetPars.JrcRatio, 1./reshape(varBumpPosTheory, size(parGrid)), 'color', cMap(1,:))
+        % plot(NetPars.JrcRatio, 1./reshape(varBumpPosTheory, size(parGrid)), 'color', cMap(1,:))
         plot(NetPars.JrcRatio, reshape(PreMat_LH, size(parGrid)), 'color', cMap(2,:))
         xlabel('Recurrent weight')
         title([{['AmplRatio=', num2str(NetPars.AmplRatio)]} , ...
@@ -164,6 +166,20 @@ switch flagTest
         axis square
         xlabel('Recurrent weight')
         ylabel('U bump height')
+    case 3
+        meanBumpPos = [NetStat.meanBumpPos];
+        meanBumpPos(1) = meanBumpPos(1) - 2*NetPars.Width;
+        plot(NetPars.Posi, meanBumpPos, 'o')
+        hold on
+        plot(NetPars.Posi, NetPars.Posi, '-')
+        axis square
+        axis tight
+        xlabel('Stimulus feature')
+        ylabel('Mean of samples')
+        set(gca, 'xtick', -180:90:180, 'ytick', -180:90:180)
+        axis(NetPars.Width *[-1, 1, -1, 1])
+        clear meanBumpPos
+        box off
 end
 %%
 figure

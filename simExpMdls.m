@@ -44,4 +44,6 @@ switch flagTask
         demoChaoticCANNSampling;
     case 11
         getTuneCuve_CoupledCANNs;
+    case 12
+        getSamplingBias_CoupledCANN;
 end
