@@ -9,7 +9,7 @@ setWorkPath;
 % Load parameters
 parsSingleCANN;
 
-flagTest = 3;
+flagTest = 1;
 % 1: Change the input intensity while fix the recurrent weight
 % 2: Change the recurrent weight while fix the input intensity
 switch flagTest
@@ -24,6 +24,8 @@ switch flagTest
 end
 NetPars.fanoFactor = 0.5;
 NetPars.tTrial = 5e3 * NetPars.tau;
+
+NetPars.seedNois = sum(clock);
 
 % Generate grid of parameters
 [parGrid, dimPar] = paramGrid(NetPars);
@@ -42,7 +44,7 @@ NetStat = struct('BumpPos', [], ...
 NetStat = repmat(NetStat, size(parGrid));
 
 tStart = clock;
-for iterPar = 1: numel(parGrid)
+parfor iterPar = 1: numel(parGrid)
     fprintf('Progress: %d/%d\n', iterPar, numel(parGrid));
     netpars = parGrid(iterPar);
     

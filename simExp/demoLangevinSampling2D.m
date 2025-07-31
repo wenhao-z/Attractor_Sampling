@@ -30,7 +30,7 @@ nSteps = 5e5;
 sMat = diag(ones(1,nDim)) - Omega * dt/ (2*tauL);
 xMat = Lambda*dt / (2*tauL);
 
-sArray = zeros(nDim,o nSteps);
+sArray = zeros(nDim, nSteps);
 for t = 1: nSteps
     sArray(:,t+1) = sMat * sArray(:,t) + xMat*x + sqrt(dt/tauL) * randn(nDim,1);
 end
