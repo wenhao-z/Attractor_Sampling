@@ -14,13 +14,13 @@ parsCoupledCANNs;
 
 % NetPars.AmplRatio = [0.05:0.01:0.09, 0.1:0.1:1];
 % NetPars.AmplRatio = unique([0.2:0.05:0.4, 0.5:0.1:0.8]);
-NetPars.AmplRatio = 0.3:0.1: 1.2;
-NetPars.AmplRatio = [0.3*ones(size(NetPars.AmplRatio)); NetPars.AmplRatio];
+% NetPars.AmplRatio = 0.3:0.1: 1.2;
+NetPars.AmplRatio = 0.1:0.2: 1.5;
+NetPars.AmplRatio = [0.2*ones(size(NetPars.AmplRatio)); NetPars.AmplRatio];
 NetPars.cueCond = 0:2; % Don't change the order of cue conditions
 
-NetPars.JrcRatio = 0.5;
-% NetPars.JrcRatio = 0.7;
-NetPars.JrpRatio = 1;
+NetPars.JrcRatio = 0.8;
+NetPars.JrpRatio = 0.7;
 NetPars.tLen = 2e3;
 NetPars.tStat = 1.5e3+1;
 
@@ -90,9 +90,10 @@ clear Omega iterPar
 
 % -------------------------------------------
 % Bump height and additivity index
-OHeight = reshape({NetStat.OHeightAvg}, size(parGrid));
-OHeight = cellfun(@(x) x(1), OHeight);
-AddIdx = OHeight(:,1) ./ sum(OHeight(:,2:3), 2);
+OHeight = reshape({NetStat.OHeightAvg}, [1, size(parGrid)]);
+OHeight = cellfun(@(x) x, OHeight, 'UniformOutput',false);
+OHeight = cell2mat(OHeight); % [# Nets, parGrid]
+AddIdx = OHeight(:,:,1) ./ sum(OHeight(:,:,2:3), 3);
 
 
 %% The change of cue weight with the change of indirect cue input intensity
@@ -117,20 +118,21 @@ ylabel('Prior precision')
 legend('Combined', 'Cue 1', 'Cue 2')
 
 
-% Plot the firing rate with cue intensities
-subplot(2,3,5)
-yyaxis left
-plot(NetPars.AmplRatio(2,:), OHeight)
-% axis square
-ylabel('Rate (net 1)')
-xlabel('Cue 2 intensity')
+% Plot the firing rate of Net 1 with cue intensities
+for iterNet = 1:2
+    subplot(2,3,4 + iterNet)
+    yyaxis left
+    plot(NetPars.AmplRatio(2,:), squeeze(OHeight(iterNet,:,:)))
+    % axis square
+    ylabel(['Rate (net' num2str(iterNet) ')'])
+    xlabel('Cue 2 intensity')
 
-yyaxis right
-plot(NetPars.AmplRatio(2,:), AddIdx)
-ylabel('Additivity index')
+    yyaxis right
+    plot(NetPars.AmplRatio(2,:), AddIdx(iterNet,:))
+    ylabel('Additivity index')
 
-legend('Comb', 'Cue 1', 'Cue 2')
-
+    legend('Comb', 'Cue 1', 'Cue 2')
+end 
 
 subplot(2,3,3)
 plot(NetPars.AmplRatio(2,:), CueWeight1(1,:))
@@ -210,46 +212,46 @@ legend('Actual', 'Prediction')
 %% Bias in the network 1
 
 % Plot the firing rate with cue intensities
-% figure
-% 
-% for IdxNet = 1:2
-% 
-%     OHeight = reshape({NetStat.OHeightAvg}, size(parGrid));
-%     OHeight = cellfun(@(x) x(IdxNet), OHeight);
-%     AddIdx = OHeight(:,1) ./ sum(OHeight(:,2:3), 2);
-% 
-%     subplot(2,3,3*IdxNet-2)
-%     yyaxis left
-%     plot(NetPars.AmplRatio(2,:),  CueWeight1_Pred(IdxNet,:)- CueWeight1(IdxNet,:))
-%     xlabel('Visual reliability')
-%     ylabel('Bias of vest. weight')
-%     yyaxis right
-%     plot(NetPars.AmplRatio(2,:), AddIdx)
-%     ylabel('Additivity index')
-%     axis square
-% 
-% 
-%     subplot(2,3,3*IdxNet-1)
-%     VarRatio = CueVar1./ CueVar1_Pred - 1;
-% 
-%     yyaxis left
-%     plot(NetPars.AmplRatio(2,:), VarRatio(1,:))
-%     xlabel('Visual reliability')
-%     ylabel('Bias of var. (%)')
-% 
-%     yyaxis right
-%     plot(NetPars.AmplRatio(2,:), AddIdx)
-%     ylabel('Additivity index')
-%     axis square
-%     title(['Net ' num2str(IdxNet)]);
-% 
-%     subplot(2,3,3*IdxNet)
-%     yyaxis left
-%     plot(AddIdx, CueWeight1_Pred(IdxNet,:)- CueWeight1(IdxNet,:))
-%     xlabel('Additivity index')
-%     ylabel('Bias of vest. weight')
-%     yyaxis right
-%     plot(AddIdx, VarRatio(IdxNet,:))
-%     ylabel('Bias of var. (%)')
-%     axis square
-% end
+figure
+
+for IdxNet = 1:2
+
+    OHeight = reshape({NetStat.OHeightAvg}, size(parGrid));
+    OHeight = cellfun(@(x) x(IdxNet), OHeight);
+    AddIdx = OHeight(:,1) ./ sum(OHeight(:,2:3), 2);
+
+    subplot(2,3,3*IdxNet-2)
+    yyaxis left
+    plot(NetPars.AmplRatio(2,:),  CueWeight1(IdxNet,:) - CueWeight1_Pred(IdxNet,:))
+    xlabel('Visual reliability')
+    ylabel('Bias of vest. weight')
+    yyaxis right
+    plot(NetPars.AmplRatio(2,:), AddIdx)
+    ylabel('Additivity index')
+    axis square
+
+
+    subplot(2,3,3*IdxNet-1)
+    VarRatio = CueVar1./ CueVar1_Pred - 1;
+
+    yyaxis left
+    plot(NetPars.AmplRatio(2,:), VarRatio(1,:))
+    xlabel('Visual reliability')
+    ylabel('Bias of var. (%)')
+
+    yyaxis right
+    plot(NetPars.AmplRatio(2,:), AddIdx)
+    ylabel('Additivity index')
+    axis square
+    title(['Net ' num2str(IdxNet)]);
+
+    subplot(2,3,3*IdxNet)
+    yyaxis left
+    plot(AddIdx, CueWeight1(IdxNet,:) - CueWeight1_Pred(IdxNet,:))
+    xlabel('Additivity index')
+    ylabel('Bias of vest. weight')
+    yyaxis right
+    plot(AddIdx, VarRatio(IdxNet,:))
+    ylabel('Bias of var. (%)')
+    axis square
+end
